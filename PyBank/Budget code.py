@@ -1,54 +1,44 @@
 import csv
 import os
-Budget_csv = os.path.join("PyBank","budget_data.csv")
-analysis_txt = os.path.join("PyBank","budget_analysis.txt")
+Budget_csv = os.path.join("Resources", "budget_data.csv")
+txt_file = os.path.join("analysis", "budget_analysis.txt")
 
-total_months = 0
-total_money = 0
-month_of_change = []
-net_change_list = []
-greatest_increase = ["", 0]
-greatest_decrease = ["", 99999999999]
+month_year_list = []
+revenue_list = []
+tot_revenue = 0
+tot_change = 0
+change_max = ['', 0]
+change_min = ['', 0]
 
 
-with open(Budget_csv) as budget_data:
-    reader = csv.reader(budget_data)
-
-    header = next(reader)
-
-    first_row = next(reader)
-    total_months = total_months + 1
-    total_money = total_money + int(first_row[1])
-    prev_net = int(first_row[1])
-
+with open(Budget_csv) as file_in:
+    reader = csv.reader(file_in)
+    next(reader)
     for row in reader:
+        month_year = row[0]
+        revenue = float(row[1])
+        month_year_list.append(month_year)
+        revenue_list.append(revenue)
+        tot_revenue += revenue
 
-        total_months = total_months + 1
-        total_money = total_money + int(row[1])
-
-        net_change = int(row[1]) - prev_net
-        prev_net = int(row[1])
-        net_change_list = net_change_list + [net_change]
-        month_of_change = month_of_change + [row[0]]
-
-        if net_change > greatest_increase[1]:
-            greatest_increase[0] = row[0]
-            greatest_increase[1] = net_change
-        
-        if net_change < greatest_decrease[1]:
-            greatest_decrease[0] = row[0]
-            greatest_decrease[1] = net_change
-
-net_monthly_avg = sum(net_change_list) / len(net_change_list)
+    tot_month = len(month_year_list)
+    for i in range(1, len(month_year_list)):
+        change = revenue_list[i] - revenue_list[i-1]
+        tot_change += change
+        if change > change_max[1]:
+            change_max = [month_year_list[i], change]
+        if change < change_min[1]:
+            change_min = [month_year_list[i], change]
+    change_average = tot_change / tot_month
 
 output = (
     f"\nFinancial Analysis\n"
     f"----------------------------\n"
-    f"Total Months: {total_months}\n"
-    f"Total: ${total_money}\n"
-    f"Average  Change: ${net_monthly_avg:.2f}\n"
-    f"Greatest Increase in Profits: {greatest_increase[0]} (${greatest_increase[1]})\n"
-    f"Greatest Decrease in Profits: {greatest_decrease[0]} (${greatest_decrease[1]})\n")
+    f"Total Months: {tot_month}\n"
+    f"Total: ${tot_revenue}\n"
+    f"Average  Change: ${change_average:.2f}\n"
+    f"Greatest Increase in Profits: {change_max[0]} (${change_max[1]})\n"
+    f"Greatest Decrease in Profits: {change_min[0]} (${change_min[1]})\n")
 
 print(output)
 
